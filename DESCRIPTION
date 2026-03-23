@@ -1,0 +1,47 @@
+Package: SPINK
+Type: Package
+Title: SPatial lINKage of RNA and ATAC for spatial multi-ome data
+Version: 1.0.0
+Date: 2026-03-23
+Authors@R: c(
+    person("Yue", "Fan", email = "xafanyue@xjtu.edu.cn", role = c("aut", "cre")),
+    person("Shiquan", "Sun", email = "sqsunsph@xjtu.edu.cn", role = "aut"))
+Description: SPINK is a statistical framework for inferring enhancer-gene 
+    regulatory interactions from spatial multi-ome data by explicitly modeling 
+    spatial dependence. It provides well-calibrated p-values and powerful 
+    detection of true regulatory links compared to existing methods.
+License: GPL-3
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 7.2.3
+Depends:
+    R (>= 4.3.1),
+    Seurat (>= 4.3.0.1),
+    Signac (>= 1.10.0)
+Imports:
+    mgcv,
+    coneproj,
+    pbmcapply,
+    parallel,
+    GenomeInfoDb,
+    GenomicRanges,
+    IRanges,
+    S4Vectors,
+    BiocGenerics,
+    stringr,
+    qlcMatrix,
+    stats,
+    methods,
+    utils
+Suggests:
+    EnsDb.Hsapiens.v86,
+    EnsDb.Hsapiens.v75,
+    EnsDb.Mmusculus.v79,
+    BSgenome.Hsapiens.UCSC.hg38,
+    BSgenome.Hsapiens.UCSC.hg19,
+    BSgenome.Mmusculus.UCSC.mm10,
+    knitr,
+    rmarkdown,
+    testthat
+biocViews: Software, Spatial, Transcriptomics, Epigenetics, GeneRegulation
+URL: https://github.com/fanyue322/SPINK
