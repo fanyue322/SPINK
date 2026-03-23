@@ -52,6 +52,7 @@ obj <- spink_analysis(
 ```
 
 ### 4. Get results
+```
 results <- GetLinkResult(obj, domain = "R3")
 head(results)
-
+```
