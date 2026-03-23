@@ -10,21 +10,21 @@
 #'
 #' @return Numeric vector of spatially decorrelated residuals
 #' 
-#' @importFrom mgcv gam s
+#' @import mgcv 
 #' @keywords internal
 RemoveSpatialPattern<-function(y,location,k=300,method='GCV.Cp')
 {
-if (length(y) != nrow(locations)) {
+if (length(y) != nrow(location)) {
    stop("Length of y must match number of rows in locations")
 }
-if (ncol(locations) < 2) {
+if (ncol(location) < 2) {
   stop("locations must have at least 2 columns for x and y coordinates")
 }
   # Create data frame for GAM
-sim_data=data.frame(sx=locations[,1],sy=locations[,2],X=y)
+sim_data=data.frame(sx=location[,1],sy=location[,2],X=y)
 # Fit thin-plate spline model
 # fx=TRUE means fixed degrees of freedom (not penalized)
-f_y_hat<-gam(X~s(sx,sy,k,fx=TRUE),data=sim_data,method=method)$fitted.values #alternative:method="REML"
+f_y_hat<-gam(X~s(sx,sy,k=k,fx=TRUE),data=sim_data,method=method)$fitted.values #alternative:method="REML"
  # Calculate residuals (spatially decorrelated)
 r_Y<-y-f_y_hat
 return(r_Y)
@@ -52,7 +52,7 @@ res.exp <- pbmcapply::pbmclapply(index, mc.cores = num.core, function(i){
           gene.expression <- as.numeric(x = expression.data[i, , drop = FALSE])
 		  print(paste0("####perform gene expression spatial pattern remove for Gene",i,'####'))
 		  tryCatch({suppressWarnings(
-		    res<-RemoveSpatialPattern(gene.expression,locations))
+		    res<-RemoveSpatialPattern(gene.expression,location))
   }, warning=function(w){ 
 		      print(w); return(res);
 		    }, error=function(e){ 
@@ -206,7 +206,8 @@ idx=match(peak.access,names(permute_peak))
 permute_peak.use<-c()
 for(i in idx)
 {
-permute_peak.use<-c(permute_peak.use,permute_peak[[i]][[1]][sample(1:200)[1]])
+num=length(permute_peak[[i]][[1]])
+permute_peak.use<-c(permute_peak.use,permute_peak[[i]][[1]][sample(1:num)[1]])
 }
 
 return(permute_peak.use)
@@ -277,18 +278,19 @@ LinkSpatialPeaks<-function(object,res,n.permute=1000)
    coef.result <- cor_method(X = t(peak.access), Y = t(expression.data.x))
             rownames(x = coef.result) <- rownames(x = peak.access)
             bg.peaks=permute_peak[all.peaks[peak.use]]
+			min_lengths <-min(sapply(permute_peak[all.peaks[peak.use]], function(x) length(x[[1]])))
 		     bg.access <-peak.data.processed[ unlist(x = bg.peaks),spot.use, drop = FALSE]
                 bg.coef <- cor_method(X = t(bg.access), Y = t(expression.data.x))
                 rownames(bg.coef) <- rownames(bg.access)
                 zscores <- vector(mode = "numeric", length =  nrow(peak.access))
-				n_sample=200
+				n_sample=min(200,min_lengths)
                 for (j in seq_along(along.with = rownames(peak.access))) {
                   coef.use <- bg.coef[(((j - 1) * n_sample) + 1):(j * n_sample), ]
                   z <- (coef.result[j] - mean(x = coef.use))/sd(x = coef.use)
                   zscores[[j]] <- z
                 }
 				pval <- pnorm(q = -abs(x = zscores))     
-                d=data.frame(gene=rownames(expression.data)[i],peak=	rownames(peak.access),zscore=zscores,pvalue=pval)	
+                d=data.frame(gene=rownames(expression.data.processed)[i],peak=	rownames(peak.access),zscore=zscores,pvalue=pval)	
                 return(d)
 		})
  result.peak=do.call(rbind,res)

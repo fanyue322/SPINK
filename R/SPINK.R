@@ -29,6 +29,8 @@
 #' 
 #' @import Seurat
 #' @import Signac
+#' @import Matrix
+#' @importFrom Matrix rowSums colSums
 #' @importFrom GenomeInfoDb seqinfo seqnames seqlevels seqlevels<- genome genome<-
 #' @importFrom pbmcapply pbmclapply
 #' @export
@@ -46,7 +48,10 @@ spink_preprocess <- function(object,
 				  
 #############################Data processing##########################				  
 
-#####Annotate Seurat Object#####				  
+#####Annotate Seurat Object#####	
+if(is.null(Annotation(object[[peak.assay]])))
+{
+			  
 if(refGenome=='hg38')
 {
 if (!require('EnsDb.Hsapiens.v86')) 
@@ -79,7 +84,7 @@ genome(annotations) <- "mm10"
 
 DefaultAssay(object)<-peak.assay
 Annotation(object) <- annotations
-
+}
 
 if(refGenome=='hg38')
 {
@@ -115,25 +120,22 @@ peak.data <- Seurat::GetAssayData(object, assay = peak.assay, slot = 'data')
 expression.data <- Seurat::GetAssayData(object, assay = rna.assay, slot = 'data')
 
 spot.use=which(object@meta.data[,group.by]==domain)
-
-peakcounts <- rowSums(x = peak.data[,spot.use] > 0)
+peakcounts <- rowSums(x = peak.data[,spot.use] > 0)  
 genecounts <- rowSums(x = expression.data[,spot.use] > 0)
 min.cells.peak=round(ncol(peak.data[,spot.use]) * min.pct.peak)
 min.cells.rna=round(ncol(expression.data[,spot.use]) * min.pct.rna)
 peaks.keep <- peakcounts > (min.cells.peak)
 genes.keep <- genecounts > min.cells.rna
-
 peak.data <- peak.data[peaks.keep, ]
 expression.data <- expression.data[genes.keep, , drop = FALSE]
-    
 genes <- rownames(x = expression.data)
 gene.coords.use <- gene.coords[gene.coords$gene_name %in% genes,]
-peaks <- granges(object[[peak.assay]])
+peaks <- Signac::granges(object[[peak.assay]])
 peaks <- peaks[peaks.keep]
 standard_chr <- seqnames(genome)
-peaks <- peaks[seqnames(peaks) %in% standard_chr]
+chr.keep<-seqnames(peaks)@values[seqnames(peaks)@values %in% standard_chr]
+peaks <- GenomeInfoDb::keepSeqlevels(x = peaks, value = chr.keep, pruning.mode = "coarse" )
 seqlevels(peaks) <- standard_chr[standard_chr %in% seqlevels(peaks)]
-
 
   peak_distance_matrix <- Signac:::DistanceToTSS(
     peaks = peaks,
@@ -142,20 +144,18 @@ seqlevels(peaks) <- standard_chr[standard_chr %in% seqlevels(peaks)]
   )
 genes.use <- colnames(x = peak_distance_matrix)
 all.peaks <- rownames(x = peak_distance_matrix)	
-
 genes.use=genes.use[colSums(peak_distance_matrix)!=0]
 peak_distance_matrix=peak_distance_matrix[,colSums(peak_distance_matrix)!=0]
 all.peaks=all.peaks[rowSums(peak_distance_matrix)!=0]
 peak_distance_matrix=peak_distance_matrix[rowSums(peak_distance_matrix)!=0,]
 gene.coords.use <- gene.coords.use[gene.coords.use$gene_name %in% genes.use,]
-
 locations=Seurat::GetTissueCoordinates(object)
 expression.data=expression.data[genes.use,]
 peak.data=peak.data[all.peaks,]
-
 expression.data.processed<-SpatialPreprocess(expression.data,locations,num.core=num.core)
 peak.data.processed<-SpatialPreprocess(peak.data,locations,num.core=num.core)
 
+object<-RegionStats(object,genome=genome)
 meta.features <- GetAssayData(object = object, assay = peak.assay, slot = "meta.features")
 data.use <- GetAssayData(object = object[[peak.assay]], slot = "counts")
 hvf.info <- FindTopFeatures(object = data.use, verbose = FALSE)
@@ -164,14 +164,7 @@ meta.features <- cbind(meta.features, hvf.info)
 
 
 all.peaks <- rownames(peak.data.processed)
-permute_peak<-list()
-for(i in 1:length(all.peaks))
-{
-peak.name=all.peaks[i]
-res<-GeneratePermutePeak(peak.name,all.peaks,meta.features)
-permute_peak[[i]]<-res
-}
-names(permute_peak)=all.peaks
+
 
   permute_peak <-pbmcapply::pbmclapply(1:length(all.peaks), mc.cores = num.core, function(x){
   peak.name=all.peaks[x]
@@ -183,7 +176,7 @@ names(permute_peak)=all.peaks
 res<-list(processed.rna=expression.data.processed,processed.peak=peak.data.processed,
 permute_peak=permute_peak,peak_distance_matrix=peak_distance_matrix,
 genes.use=genes.use,all.peaks=all.peaks,
-distance=distance,spot.use=spot.use,
+distance=distance,spot.use=spot.use,domain=domain,
 num.core=num.core)
 
 object@misc$spink<-res
@@ -207,16 +200,16 @@ return(object)
 #' @importFrom pbmcapply pbmclapply
 #' @export
 
-spink_analysis <- function(object,link.gene.thr=0.1,n.permute=1000) {
+spink_analysis <- function(object,gene.thr=0.1,n.permute=1000) {
 
 res<-slot(object,"misc")
 res<-res[['spink']]
 
 result<-LinkSpatialPeaks(object,res)
 result$pval.peak[which(result$zscore.peak<=0)]=1
-result$pval.peak[which(result$pval.gene>gene.thr)]=1
+result$pval.peak[which(result$p.adj.gene>gene.thr)]=1
 result=result[order(result$pval.peak),]
-object@misc$spink[[paste0("Link_",domain)]]=result
+object@misc$spink[[paste0("Link_",res$domain)]]=result
 return(object)
 }
 

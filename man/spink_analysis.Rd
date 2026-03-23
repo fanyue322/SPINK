@@ -4,14 +4,14 @@
 \alias{spink_analysis}
 \title{Perform SPINK analysis to identify enhancer-gene regulatory links}
 \usage{
-spink_analysis(object, link.gene.thr = 0.1, n.permute = 1000)
+spink_analysis(object, gene.thr = 0.1, n.permute = 1000)
 }
 \arguments{
 \item{object}{A preprocessed Seurat object from spink_preprocess}
 
-\item{link.gene.thr}{P-value threshold for gene-level significance (default: 0.1)}
-
 \item{n.permute}{Number of permutations for empirical p-value (default: 1000)}
+
+\item{link.gene.thr}{P-value threshold for gene-level significance (default: 0.1)}
 }
 \value{
 Seurat object with results stored in misc$spink$Link_domain
