@@ -20,7 +20,7 @@ devtools::install_github("fanyue322/SPINK")
 ```
 
 ## Quick Start
-# 1. Load data
+### 1. Load data
 
 ```
 library(SPINK)
@@ -30,7 +30,7 @@ data(object)
 object
 ```
 
-# 2. Preprocess
+### 2. Preprocess
 ```
 obj <- spink_preprocess(
   object = object,
@@ -42,7 +42,7 @@ obj <- spink_preprocess(
 )
 ```
 
-# 3. Run analysis
+### 3. Run analysis
 ```
 obj <- spink_analysis(
   object = obj,
@@ -51,7 +51,7 @@ obj <- spink_analysis(
 )
 ```
 
-# 4. Get results
+### 4. Get results
 results <- GetLinkResult(obj, domain = "R3")
 head(results)
 
