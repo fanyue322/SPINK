@@ -72,8 +72,8 @@ SPINK analyzes spatially co-profiled transcriptomic and epigenomic data from spa
 `spink_preprocess()`
 Prepares spatial multi-ome data for regulatory inference by removing spatial autocorrelation and constructing matched background peaks.
 ```r
-seurat <- spink_preprocess(
-  object = seurat_obj,
+object <- spink_preprocess(
+  object = object,
   group.by = "domain",
   domain = "R3",
   refGenome = "hg38",
@@ -93,8 +93,8 @@ seurat <- spink_preprocess(
 `spink_analysis()`
 Performs constrained regression to identify significant enhancer-gene regulatory links.
 ```r
-obj <- spink_analysis(
-  object = obj,
+object <- spink_analysis(
+  object = object,
   gene.thr = 0.1,
   n.permute = 1000
 )
