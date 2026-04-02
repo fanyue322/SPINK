@@ -54,6 +54,7 @@ head(results)
 
 ## Usage
 **Input Format**
+
 SPINK analyzes spatially co-profiled transcriptomic and epigenomic data from spatial multi-ome technologies (e.g., MISAR-seq, Spatial-RNA-ATAC, Slide-tags).Data must be formatted as a Seurat object with:
 
 | Component               | Requirement                        | 
@@ -67,6 +68,7 @@ SPINK analyzes spatially co-profiled transcriptomic and epigenomic data from spa
 **Note**: Peaks must be called with MACS2 from spatial ATAC-seq fragments. 
 
 **Key Functions**
+
 `spink_preprocess()`
 Prepares spatial multi-ome data for regulatory inference by removing spatial autocorrelation and constructing matched background peaks.
 ```r
