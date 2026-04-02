@@ -53,11 +53,26 @@ head(results)
 ```
 
 ## Usage
-SPINK analyzes spatially co-profiled transcriptomic and epigenomic data from spatial multi-ome technologies (e.g., MISAR-seq, Spatial-RNA-ATAC, Slide-tags).
+SPINK analyzes spatially co-profiled transcriptomic and epigenomic data from spatial multi-ome technologies (e.g., MISAR-seq, Spatial-RNA-ATAC, Slide-tags).Data must be formatted as a Seurat object with:
 
-**Input Requirements:**
-- A **Seurat object** containing:
-  - RNA assay: log-normalized gene expression matrix (genes × spots)
-  - ATAC assay: TF-IDF normalized chromatin accessibility matrix (peaks × spots)
-  - Spatial coordinates in the `images` slot 
-- **Identical spot barcodes** across RNA and ATAC assays
+| Component               | Requirement                        | 
+| ----------------------- | ---------------------------------- | 
+| **RNA assay**           | Raw counts → Log-normalized        | 
+| **ATAC assay**          | Fragments → TF-IDF normalized      | 
+| **Peaks**               | MACS2-called narrow/broad peaks    | 
+| **Spatial coordinates** | Tissue positions (x, y)            | 
+| **Spot barcodes**       | Identical across RNA & ATAC assays |
+
+**Note**: Peaks must be called with MACS2 from spatial ATAC-seq fragments. 
+
+Output Format
+| Column        | Description                                |
+| ------------- | ------------------------------------------ |
+| `gene`        | Target gene symbol                         |
+| `npeaks`      | Number of cis-peaks tested (±500kb)        |
+| `pval.gene`   | Raw gene-level p-value (Beta mixture test) |
+| `p.adj.gene`  | Permutation-adjusted gene-level p-value    |
+| `peak`        | Peak identifier (`chr-start-end`)          |
+| `zscore.peak` | Correlation z-score vs. matched background |
+| `pval.peak`   | Peak-level p-value (fine-mapping)          |
+
