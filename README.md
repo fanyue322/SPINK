@@ -20,39 +20,44 @@ devtools::install_github("fanyue322/SPINK")
 ```
 
 ## Quick Start
-### 1. Load data
+Analyze a spatial domain in 4 steps:
 
-```
+
+```r
 library(SPINK)
 
-# Load example data (included in package)
+# 1. Load example data (included in package)
 data(object)
 object
-```
 
-### 2. Preprocess
-```
+# 2. Preprocess: spatial decorrelation + cis peak-gene mapping
 obj <- spink_preprocess(
   object = object,
-  group.by = "domain",
-  domain = "R3",           
-  refGenome = "hg38",
-  distance = 5e+05,          
-  num.core = 2
+  group.by = "domain",    # metadata column with domain labels
+  domain = "R3",          # target domain (CA region)  
+  refGenome = "hg38",     # or "hg19", "mm10"
+  distance = 5e+05,       # search window for cis-regulatory elements (bp)      
+  num.core = 2            # parallel cores for TPS fitting
 )
-```
 
-### 3. Run analysis
-```
+# 3. Infer regulatory links: constrained regression + permutation testing
 obj <- spink_analysis(
   object = obj,
-  link.gene.thr = 0.1,       
-  n.permute = 1000           
+  link.gene.thr = 0.1,        # gene-level significance threshold 
+  n.permute = 1000            # permutations for empirical p-values
 )
-```
 
-### 4. Get results
-```
+# 4. Extract results: gene-level and peak-level associations
 results <- GetLinkResult(obj, domain = "R3")
 head(results)
 ```
+
+## Usage
+SPINK analyzes spatially co-profiled transcriptomic and epigenomic data from spatial multi-ome technologies (e.g., MISAR-seq, Spatial-RNA-ATAC, Slide-tags).
+
+**Input Requirements:**
+- A **Seurat object** containing:
+  - RNA assay: log-normalized gene expression matrix (genes × spots)
+  - ATAC assay: TF-IDF normalized chromatin accessibility matrix (peaks × spots)
+  - Spatial coordinates in the `images` slot 
+- **Identical spot barcodes** across RNA and ATAC assays
