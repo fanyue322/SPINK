@@ -116,7 +116,7 @@ object <- spink_analysis(
 
 
 
-A tutorial includes main example codes for human hippocampus data analysis can be found [here](https://fanyue322.github.io/SPINK)
+A tutorial includes main example codes for human hippocampus data analysis can be found [here](https://fanyue322.github.io/SPINKWeb)
 
 ## Our group
 
