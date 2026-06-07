@@ -43,7 +43,7 @@ obj <- spink_preprocess(
 # 3. Infer regulatory links: constrained regression + permutation testing
 obj <- spink_analysis(
   object = obj,
-  link.gene.thr = 0.1,        # gene-level significance threshold 
+  gene.thr = 0.1,        # gene-level significance threshold 
   n.permute = 1000            # permutations for empirical p-values
 )
 
